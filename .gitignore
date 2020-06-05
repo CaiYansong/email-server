@@ -3,7 +3,7 @@
 # dependencies
 /node_modules
 /.pnp
-/upload
+/upload/*.html
 .pnp.js
 
 # testing
