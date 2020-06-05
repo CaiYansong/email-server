@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮件发送</title>
+    <style>
+        input {
+            min-width: 200px;
+            line-height: 30px;
+        }
+
+        .form-item {
+            margin: 10px 0;
+        }
+
+        .form-item span {
+            display: inline-block;
+            width: 80px;
+        }
+    </style>
+</head>
+
+<body>
+    <form name="email-form" id="email-form">
+        <div class="form-item">
+            <span>邮箱系统: </span>
+            <input name="service" placeholder="邮箱系统" value="126" />
+        </div>
+        <div class="form-item">
+            <span>端口: </span>
+            <input name="port" placeholder="邮箱系统" value="465" />
+        </div>
+        <div class="form-item">
+            <span>用户名: </span>
+            <input name="userName" placeholder="用户名" />
+        </div>
+        <div class="form-item">
+            <span>账 号: </span>
+            <input name="user" placeholder="账号" />
+        </div>
+        <div class="form-item">
+            <span>授权码: </span>
+            <input name="pass" placeholder="授权码" />
+        </div>
+        <br />
+        <div class="form-item">
+            <span>收件人: </span>
+            <input name="receivers" placeholder="收件人" />
+        </div>
+        <div class="form-item">
+            <span>主 题: </span>
+            <input name="title" placeholder="主题" />
+        </div>
+        <div class="form-item">
+            <span>邮件模版: </span>
+            <input name="html" type="file" accept="html" />
+        </div>
+    </form>
+    <button class="form-item" id="send-email">发送</button>
+</body>
+
+<script>
+    const sendBtn = document.getElementById('send-email');
+    const myForm = document.getElementById('email-form');
+    sendBtn.addEventListener('click', function () {
+        var form = new FormData(myForm); // 将表单中的value和name进行组合，实现序列化。
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '/sendEmail');
+        xhr.send(form); // form不需要再修改格式！！！！
+        // 监听状态
+        xhr.onload = function () {
+            const res = JSON.parse(xhr.response);
+            if (res.success) {
+                alert(res.msg);
+            } else {
+                alert(res.msg);
+            }
+        };
+    });
+</script>
+
+</html>
