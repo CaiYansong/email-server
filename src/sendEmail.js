@@ -3,12 +3,12 @@
 const nodemailer = require('nodemailer');
 
 function sendEmail(senderConfig = {}, receivers = '', contentObj = {}) {
-    const { service, port = 465, user, pass, userName } = senderConfig;
+    const { service, user, pass, userName } = senderConfig;
 
     const transporter = nodemailer.createTransport({
         // host: 'smtp.ethereal.email',
         service, // 使用了内置传输发送邮件 查看支持列表：https://nodemailer.com/smtp/well-known/
-        port, // 465 SMTP 端口
+        port: 465, // SMTP 端口
         secureConnection: true, // 使用了 SSL
         auth: {
             user,
@@ -35,8 +35,8 @@ function sendEmail(senderConfig = {}, receivers = '', contentObj = {}) {
                 return;
             }
             console.log('Message sent: %s', info.messageId);
+            // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
             resolve(info);
-            // Message sent: <04ec7731-cc68-1ef6-303c-61b0f796b78f@qq.com>
         });
     });
 }
