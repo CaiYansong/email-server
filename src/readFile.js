@@ -7,7 +7,8 @@ const fs = require("fs");
 function readFile(path) {
     return new Promise((resolve, reject) => {
         var input = fs.createReadStream(path);
-        input.setEncoding("binary");
+        // 中文: utf8  二进制: binary
+        input.setEncoding("utf8");
         var remaining = "";
 
         input.on("data", function (data) {
