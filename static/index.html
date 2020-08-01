@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>邮件模版发送</title>
     <style>
+        .root {
+            display: flex;
+            flex-direction: row;
+        }
+
         input {
             min-width: 200px;
             line-height: 30px;
@@ -23,53 +28,82 @@
         .hide {
             display: none;
         }
+
+        .pc {
+            width: 660px;
+            height: 760px;
+            margin-left: 10px;
+            border: 1px solid #000;
+            overflow: auto;
+        }
     </style>
 </head>
 
 <body>
-    <form name="email-form" id="email-form">
-        <div class="form-item">
-            <span>邮箱系统: </span>
-            <input name="service" placeholder="邮箱系统" value="126" />
+    <div class="root">
+        <div>
+            <form name="email-form" id="email-form">
+                <div class="form-item">
+                    <span>邮箱系统: </span>
+                    <input name="service" placeholder="邮箱系统" />
+                </div>
+                <div class="form-item">
+                    <span>端口: </span>
+                    <input name="port" placeholder="邮箱系统" />
+                </div>
+                <div class="form-item">
+                    <span>用户名: </span>
+                    <input name="userName" placeholder="用户名" />
+                </div>
+                <div class="form-item">
+                    <span>账 号: </span>
+                    <input name="user" placeholder="账号" />
+                </div>
+                <div class="form-item">
+                    <span>授权码: </span>
+                    <input name="pass" placeholder="授权码" />
+                </div>
+                <br />
+                <div class="form-item">
+                    <span>收件人: </span>
+                    <input name="receivers" placeholder="收件人" />
+                </div>
+                <div class="form-item">
+                    <span>主 题: </span>
+                    <input name="title" placeholder="主题" />
+                </div>
+                <div class="form-item">
+                    <span>邮件模版: </span>
+                    <input name="html" type="file" accept="html" />
+                </div>
+            </form>
+            <button class="form-item send-email" id="send-email">发送</button>
+            <button class="form-item" id="preview-email">预览</button>
+            <div id="loading" class="hide">sending</div>
+            <div id="tips" class="hide">success</div>
         </div>
-        <div class="form-item">
-            <span>端口: </span>
-            <input name="port" placeholder="邮箱系统" value="465" />
+        <div class="pc" id="pc">
+
         </div>
-        <div class="form-item">
-            <span>用户名: </span>
-            <input name="userName" placeholder="用户名" />
-        </div>
-        <div class="form-item">
-            <span>账 号: </span>
-            <input name="user" placeholder="账号" />
-        </div>
-        <div class="form-item">
-            <span>授权码: </span>
-            <input name="pass" placeholder="授权码" />
-        </div>
-        <br />
-        <div class="form-item">
-            <span>收件人: </span>
-            <input name="receivers" placeholder="收件人" />
-        </div>
-        <div class="form-item">
-            <span>主 题: </span>
-            <input name="title" placeholder="主题" />
-        </div>
-        <div class="form-item">
-            <span>邮件模版: </span>
-            <input name="html" type="file" accept="html" />
-        </div>
-    </form>
-    <button class="form-item" id="send-email">发送</button>
-    <div id="loading" class="hide">sending</div>
+    </div>
 </body>
 
 <script>
     const sendBtn = document.getElementById('send-email');
     const myForm = document.getElementById('email-form');
     const loadingEle = document.getElementById('loading');
+    const tipsEle = document.getElementById('tips');
+
+    function showTips(tips) {
+        tipsEle.innerHTML = tips;
+        tipsEle.className = '';
+        setTimeout(() => {
+            tipsEle.innerHTML = '';
+            tipsEle.className = 'hide';
+        }, 2000);
+    }
+
+    // 发送
     sendBtn.addEventListener('click', function () {
         loadingEle.className = '';
         sendBtn.className = 'hide';
@@ -82,10 +116,36 @@
         xhr.onload = function () {
             const res = JSON.parse(xhr.response);
             loadingEle.className = 'hide';
-            sendBtn.className = '';
+            sendBtn.className = 'send-email';
             if (res.success) {
                 console.log(res.html);
+                pcEle.innerHTML = res.html;
+                showTips(res.msg);
+            } else {
                 alert(res.msg);
+            }
+        };
+    });
+
+    const previewBtn = document.getElementById('preview-email');
+    // const mobileEle = document.getElementById('mobile');
+    const pcEle = document.getElementById('pc');
+    // 预览
+    previewBtn.addEventListener('click', function () {
+        var form = new FormData(myForm); // 将表单中的value和name进行组合，实现序列化。
+        pcEle.innerHTML = 'loading...';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '/previewEmail');
+        xhr.send(form); // form不需要再修改格式！！！！
+        // 监听状态
+        xhr.onload = function () {
+            const res = JSON.parse(xhr.response);
+            if (res.success) {
+                // mobileEle.innerHTML = res.html;
+                pcEle.innerHTML = res.html;
+                console.log(res.html);
+                // alert(res.msg);
             } else {
                 alert(res.msg);
             }

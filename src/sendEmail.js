@@ -3,16 +3,16 @@
 const nodemailer = require('nodemailer');
 
 function sendEmail(senderConfig = {}, receivers = '', contentObj = {}) {
-    const { service, user, pass, userName } = senderConfig;
+    const { service, user, pass, userName, port = 465 } = senderConfig;
 
     const transporter = nodemailer.createTransport({
         // host: 'smtp.ethereal.email',
         service, // 使用了内置传输发送邮件 查看支持列表：https://nodemailer.com/smtp/well-known/
-        port: 465, // SMTP 端口
+        port, // 默认 465 SMTP 端口
         secureConnection: true, // 使用了 SSL
         auth: {
             user,
-            // 设置的smtp授权码
+            // 设置 端口 对应的授权码
             pass,
         },
     });

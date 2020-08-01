@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDM开发</title>
+
+    <style>
+        .wrap {
+            height: 660px;
+            display: flex;
+            flex-direction: row;
+            margin: 10px;
+        }
+
+        .input {
+            width: 700px;
+            height: 100%;
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #000;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+
+        .review {
+            width: 660px;
+            height: 100%;
+            border: 1px solid #000;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <label>
+        <input type="checkbox" id="isHotUpdate" name="isHotUpdate" />
+        是否自动编译 (编辑停留2S后自动编译)
+    </label>
+    <label>
+        <input type="checkbox" id="isRemoveClass" name="isRemoveClass" checked />
+        是否删除class
+    </label>
+    <label>
+        <input type="checkbox" id="isHandleData" name="isHandleData" checked />
+        是否处理数据
+    </label>
+    <div><button id="update">编译</button></div>
+
+    <div class="wrap">
+        <!-- <div id="input" class="input" contenteditable="true"></div> -->
+        <textarea id="input" class="input" contenteditable="true"></textarea>
+        <div id="review" class="review"></div>
+    </div>
+</body>
+<script>
+    const inputEle = document.getElementById('input');
+    const reviewEle = document.getElementById('review');
+    const isHotUpdateCheckBox = document.getElementById('isHotUpdate');
+    const isRemoveClassCheckBox = document.getElementById('isRemoveClass');
+    const isHandleDataCheckBox = document.getElementById('isHandleData');
+    const updateBtn = document.getElementById('update');
+    let isUpdating = false;
+    const autoUpdateTime = 2000;
+
+    inputEle.addEventListener('keydown', handleTabKey);
+
+    function handleTabKey(e) {
+        if (e.keyCode === 9) {
+            var position = this.selectionStart + 2; // 两个空格表示缩进
+            this.value = this.value.substr(0, this.selectionStart) + '  ' + this.value.substr(this.selectionStart);
+            this.selectionStart = position;
+            this.selectionEnd = position;
+            this.focus();
+            // 阻止默认切换元素的行为
+            if (e && e.preventDefault) {
+                e.preventDefault()
+            } else {
+                window.event.returnValue = false
+            }
+        }
+    }
+
+    // 是否自动更新
+    isHotUpdateCheckBox.addEventListener('click', (e) => {
+        const checkboxEle = e.target || e.srcElement;
+        if (checkboxEle.checked) {
+            updateBtn.style.display = 'none';
+            inputEle.addEventListener('keydown', hotUpdate);
+        } else {
+            updateBtn.style.display = 'block';
+            inputEle.removeEventListener('keydown', hotUpdate);
+        }
+    });
+
+    // 手动编译
+    updateBtn.addEventListener('click', update);
+
+    // 自动更新
+    let timer = null;
+    function hotUpdate(e) {
+        handleTabKey(e);
+
+        if (timer) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout(() => {
+            update();
+        }, autoUpdateTime);
+    }
+
+    // 发送请求，获取编译处理后的页面
+    function update() {
+        if (isUpdating) {
+            return;
+        }
+
+        const mjml = inputEle.value;
+
+        isUpdating = true;
+        reviewEle.innerHTML = ' loading...';
+        updateBtn.style.display = 'none';
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '/compileAndHandleData');
+        xhr.setRequestHeader("content-type", "application/json");
+        xhr.send(JSON.stringify({
+            mjml,
+            removeClass: isRemoveClassCheckBox.checked,
+            isHandleData: isHandleDataCheckBox.checked,
+        }));
+        // 监听状态
+        xhr.onload = function () {
+            isUpdating = false;
+            updateBtn.style.display = 'block';
+            const res = JSON.parse(xhr.response);
+            if (res.success) {
+                reviewEle.innerHTML = res.html;
+            } else {
+                reviewEle.innerHTML = res.html || '';
+                alert(res.msg);
+            }
+        };
+    }
+</script>
+
+</html>
